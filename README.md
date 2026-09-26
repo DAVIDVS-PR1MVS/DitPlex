@@ -41,7 +41,6 @@ O **DitPlex** é uma ferramenta de linha de comando leve voltada para a convers�
 - [ ] **Sinais Sonoros:** Reprodução de áudio dos impulsos de frequência para cada ponto e traço.
 - [ ] **Exportação de Arquivos:** Salvamento automático das traduções em arquivos de texto `.txt`.
 - [ ] **Modo de Aprendizado:** O projeto ainda não possui um módulo de treinamento. Caso haja interesse da comunidade, essa função poderá ser desenvolvida no futuro.
-- [ ] **Cores:** Adicionar opção de selecionar a cor principal do programa.
 
 ---
 
