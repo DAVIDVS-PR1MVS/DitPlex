@@ -14,8 +14,6 @@
 
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-(LICENSE)
-
 ![Versão](https://img.shields.io/badge/Versão-1.4.0-blue?style=for-the-badge)
 
 
