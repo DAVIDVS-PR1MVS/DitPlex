@@ -26,8 +26,19 @@ jobs:
       - name: Install PyInstaller
         run: python -m pip install --upgrade pip pyinstaller
 
+      - name: Sanitize Version Tag
+        id: version
+        shell: bash
+        run: |
+          TAG_CLEAN=$(echo "${GITHUB_REF_NAME}" | sed -E 's/^v//')
+          if [[ ! "$TAG_CLEAN" =~ ^[0-9] ]]; then
+            TAG_CLEAN="1.4.0"
+          fi
+          echo "CLEAN_VERSION=${TAG_CLEAN}" >> $GITHUB_ENV
+
       - name: Build Windows Exe
-        run: python Scripts/build.py --clean
+        shell: bash
+        run: python Scripts/build.py --clean --isolated --name "DitPlex-${CLEAN_VERSION}"
 
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v4
@@ -62,7 +73,7 @@ jobs:
       - name: Install PyInstaller and Build Linux Binary
         run: |
           python -m pip install --upgrade pip pyinstaller
-          python Scripts/build.py --clean
+          python Scripts/build.py --clean --isolated
 
       - name: Prepare Packaging Structure
         run: |
@@ -101,7 +112,7 @@ jobs:
         run: |
           TAG_CLEAN=$(echo "${GITHUB_REF_NAME}" | sed -E 's/^v//')
           if [[ ! "$TAG_CLEAN" =~ ^[0-9] ]]; then
-            TAG_CLEAN="1.1.1"
+            TAG_CLEAN="1.4.0"
           fi
           echo "CLEAN_VERSION=${TAG_CLEAN}" >> $GITHUB_ENV
 
@@ -166,7 +177,7 @@ jobs:
       - name: Install PyInstaller and Build Linux Binary
         run: |
           python -m pip install --upgrade pip pyinstaller
-          python Scripts/build.py --clean
+          python Scripts/build.py --clean --isolated
 
       - name: Install Flatpak Builder and ImageMagick
         run: |
@@ -194,7 +205,7 @@ jobs:
         run: |
           TAG_CLEAN=$(echo "${GITHUB_REF_NAME}" | sed -E 's/^v//')
           if [[ ! "$TAG_CLEAN" =~ ^[0-9] ]]; then
-            TAG_CLEAN="1.1.1"
+            TAG_CLEAN="1.4.0"
           fi
           flatpak-builder --disable-rofiles-fuse --force-clean --repo=repo build-dir org.ditplex.DitPlex.yml
           flatpak build-bundle repo "DitPlex-${TAG_CLEAN}.flatpak" org.ditplex.DitPlex
