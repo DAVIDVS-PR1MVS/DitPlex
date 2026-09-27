@@ -11,9 +11,7 @@
 ![Plataforma](https://img.shields.io/badge/OS-WINDOWS%20%7C%20LINUX-green)
 
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)
-
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-
 ![Versão](https://img.shields.io/badge/Versão-1.4.0-blue?style=for-the-badge)
 
 
