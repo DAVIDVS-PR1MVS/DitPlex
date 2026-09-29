@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="assets/logo2.png" alt="DitPlex Logo" width="120" />
+  <img src="assets/logo2.png" alt="DitPlex Logo" width="200" />
 
   # DitPlex
 
