@@ -12,7 +12,6 @@ Embora o código-fonte deste repositório esteja protegido sob a **Licença MIT*
 * Logotipos, ícones, ilustrações e artes visuais;
 * Capturas de tela, designs de interface de usuário (UI/UX) e layouts;
 * Banners, elementos gráficos e identidades visuais;
-* O nome do projeto (**DitPlex**) e marcas associadas;
 
 estão protegidos pelas leis de propriedade intelectual e pertencem exclusivamente a **DAVIDVS-PR1MVS**.
 
@@ -29,7 +28,6 @@ While the source code in this repository is licensed under the **MIT License** (
 * Logos, icons, illustrations, and visual artwork;
 * Screenshots, user interface (UI/UX) designs, and layouts;
 * Banners, graphic assets, and brand identities;
-* The project name (**DitPlex**) and associated branding;
 
 are protected under copyright laws and belong exclusively to **DAVIDVS-PR1MVS**.
 
