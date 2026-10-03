@@ -2,11 +2,12 @@ import os
 import unicodedata
 import re
 import sys
+import argparse
 import platform
 import configparser
 from platformdirs import user_config_dir
 #///////////////////////
-version = "1.4.0"
+version = "1.4.1"
 def System():
     try:
         return platform.freedesktop_os_release()["ID"]
@@ -23,19 +24,39 @@ colors = {
     "6": "\033[35m"     # Roxo
 }
 RESET = "\033[0m"
+RED = colors["2"]
+def Error(message):
+    print(f"{RED}{message}{RESET}", file=sys.stderr)
 def Path():
-    folder = user_config_dir("ditplex")
-    os.makedirs(folder, exist_ok=True)
-    return os.path.join(folder, "config.ini")
-def Data():
+    try:
+        folder = user_config_dir("ditplex")
+        os.makedirs(folder, exist_ok=True)
+        return os.path.join(folder, "config.ini")
+    except OSError:
+        return None
+def Save(color):
+    if configs is None:
+        return False
     config = configparser.ConfigParser()
-    if not os.path.exists(configs):
-        config["SETTINGS"] = {"cor": "1"}
+    config["SETTINGS"] = {"cor": str(color)}
+    try:
         with open(configs, "w", encoding="utf-8") as a:
             config.write(a)
+        return True
+    except OSError:
+        return False
+def Data():
+    if configs is None:
+        return colors["1"]
+    if not os.path.exists(configs):
+        Save("1")
         return colors["1"]
 
-    config.read(configs, encoding="utf-8")
+    config = configparser.ConfigParser()
+    try:
+        config.read(configs, encoding="utf-8")
+    except (OSError, configparser.Error):
+        return colors["1"]
     color = config.get("SETTINGS", "cor", fallback="1").strip().upper()
     return colors.get(color, colors["1"])
 configs = Path()
@@ -61,10 +82,13 @@ morse = [
     #s-z (s, t, u, v, w, x, y, z)
     "...", "-", "..-", "...-", ".--", "-..-", "-.--", "--..",
     #0-9
-    "-----", ".----", "..---", "...--", "....-", ".....", "-....", "--...", "---..", "----."
+    "-----", ".----", "..---", "...--", "....-", ".....", "-....", "--...", "---..", "----.",
+    #símbolos (. , ? ' ! ( ) & : ; = + - _ " $ @)
+    ".-.-.-", "--..--", "..--..", ".----.", "-.-.--", "-.--.", "-.--.-", ".-...", "---...", "-.-.-.", "-...-", ".-.-.", "-....-", "..--.-", ".-..-.", "...-..-", ".--.-."
 ]
 letters = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    ".", ",", "?", "'", "!", "(", ")", "&", ":", ";", "=", "+", "-", "_", '"', "$", "@"
 ]
 key = dict(zip(letters, morse))
 key2 = dict(zip(morse, letters))
@@ -144,58 +168,71 @@ def Mode(option):
         Menu_colors()
         escolha = input("Selecione a cor: ").strip()
         if escolha in colors:
-            config = configparser.ConfigParser()
-            config["SETTINGS"] = {"cor": str(escolha)}
-            with open(configs, "w", encoding="utf-8") as a:
-                config.write(a)
             Basecolor = colors[escolha]
-            print("Cor atualizada!")
+            if Save(escolha):
+                print("Cor atualizada!")
+            else:
+                Error("Cor aplicada, mas não foi possível salvar a configuração.")
         else:
-            print("Cor inválida.3")
+            Error("Cor inválida.")
         input("\nPressione Enter para continuar...")
     elif option == 4:
         sys.exit()
     else:
-        print("Esse modo Não existe, tente novamente")
+        Error("Esse modo não existe, tente novamente")
         input("\nPressione Enter para tentar novamente...")
 #///////////////////////
-if len(sys.argv) > 1:
-    arg = sys.argv[1].lower()
+class ArgParser(argparse.ArgumentParser):
+    def error(self, message):
+        Error(f"Erro: {message}")
+        sys.exit(1)
+def Parser():
+    parser = ArgParser(prog="DitPlex", add_help=False, allow_abbrev=False)
+    parser.add_argument("-t", "--text", action="store_true")
+    parser.add_argument("-m", "--morse", action="store_true")
+    parser.add_argument("-v", "--version", action="store_true")
+    parser.add_argument("-h", "--help", action="store_true")
+    return parser
+def Split(argv):
+    for i, arg in enumerate(argv):
+        if arg in ("-t", "--text", "-m", "--morse"):
+            return argv[:i + 1], " ".join(argv[i + 1:]).strip()
+    return argv, ""
+def Help():
+    print(f"{Basecolor}Uso:{RESET} DitPlex [opção] [conteúdo]\n")
+    print(f"{Basecolor}Opções disponíveis:{RESET}")
+    print(f"  {Basecolor}-t, --text{RESET} <texto>    Converte texto em código Morse.")
+    print(f"  {Basecolor}-m, --morse{RESET} <morse>   Converte código Morse em texto.")
+    print(f"  {Basecolor}-v, --version{RESET}          Exibe metadados, sistema e versão do aplicativo.")
+    print(f"  {Basecolor}-h, --help{RESET}             Exibe este menu de ajuda.")
+def CLI(argv=None):
+    flags, content = Split(sys.argv[1:] if argv is None else argv)
+    args, extras = Parser().parse_known_args(flags)
 
-    if arg in ["--version", "-v"]:
+    if args.version:
         print(f"{Basecolor}[Version]:{RESET} {version} {Basecolor}[OS/Arch]:{RESET} {System()}/{arch} {Basecolor}[License]:{RESET} MIT")
         sys.exit(0)
-    elif arg in ["--help", "-h"]:
-        print(f"{Basecolor}Uso:{RESET} DitPlex [opção] [conteúdo]\n")
-        print(f"{Basecolor}Opções disponíveis:{RESET}")
-        print(f"  {Basecolor}-t, --text{RESET} <texto>   Converte texto em código Morse.")
-        print(f"  {Basecolor}-m, --morse{RESET} <morse>   Converte código Morse em texto.")
-        print(f"  {Basecolor}-v, --version{RESET}          Exibe metadados, sistema e versão do aplicativo.")
-        print(f"  {Basecolor}-h, --help{RESET}          Exibe este menu de ajuda.")
+    if args.help:
+        Help()
         sys.exit(0)
-    elif arg in ["--text", "-t"]:
-        if len(sys.argv) > 2:
-            text = " ".join(sys.argv[2:])
-            translate = Morse(text)
-            print(translate)
-        else:
-            print(f"Erro: Faltou informar o texto. Exemplo: DitPlex -t \"SOS\"")
-            sys.exit(1)
-        sys.exit(0)
-    elif arg in ["--morse", "-m"]:
-        if len(sys.argv) > 2:
-            text = " ".join(sys.argv[2:])
-            translate = MinT(text)
-            print(translate)
-        else:
-            print(f"Erro: Faltou informar o código Morse. Exemplo: DitPlex -m \"... --- ...\"")
-            sys.exit(1)
-        sys.exit(0)
-    else:
-        print(f"Opção desconhecida: '{sys.argv[1]}'. Use --help ou -h para ver as opções disponíveis.")
+    if extras:
+        Error(f"Opção desconhecida: '{extras[0]}'. Use --help ou -h para ver as opções disponíveis.")
+        sys.exit(1)
+    if args.text:
+        if content:
+            print(Morse(content))
+            sys.exit(0)
+        Error("Erro: Faltou informar o texto. Exemplo: DitPlex -t \"SOS\"")
+        sys.exit(1)
+    if args.morse:
+        if content:
+            print(MinT(content))
+            sys.exit(0)
+        Error("Erro: Faltou informar o código Morse. Exemplo: DitPlex -m \"... --- ...\"")
         sys.exit(1)
 #///////////////////////
 if __name__=="__main__":
+    CLI()
     try:
         while True:
             Menu()
