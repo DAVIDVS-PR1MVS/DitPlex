@@ -102,6 +102,12 @@ jobs:
           [ "$OUT" = "CA" ] || { echo "Saida inesperada em -m: $OUT"; exit 1; }
           ls -lh dist/
 
+      - name: Report binary contents
+        run: |
+          BIN="dist/DitPlex"
+          [ -f "$BIN" ] || BIN="dist/ditplex"
+          pyi-archive_viewer -l "$BIN" < /dev/null || true
+
       - name: Prepare Packaging Structure
         run: |
           mkdir -p pkg_root/usr/bin
