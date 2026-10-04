@@ -74,8 +74,11 @@ def setup_isolated_venv(venv_dir: Path) -> Path:
         python_exe = venv_dir / "bin" / "python"
         pyinstaller_exe = venv_dir / "bin" / "pyinstaller"
 
-    print_step("Instalando gerador de binários em ambiente isolado", "pyinstaller")
-    subprocess.run([str(python_exe), "-m", "pip", "install", "--quiet", "pyinstaller"], check=True)
+    print_step("Instalando dependências em ambiente isolado", "pyinstaller, platformdirs")
+    subprocess.run(
+        [str(python_exe), "-m", "pip", "install", "--quiet", "pyinstaller", "platformdirs"],
+        check=True
+    )
 
     return pyinstaller_exe
 
@@ -169,7 +172,10 @@ def main():
 
     # Exclusões seguras para manter a estabilidade da biblioteca padrão do Python
     excluded_modules = [
-        "tkinter", "unittest", "pydoc", "sqlite3"
+        "tkinter", "unittest", "pydoc", "sqlite3",
+        "setuptools", "pkg_resources", "distutils", "_distutils_hack",
+        "email", "http", "xml", "ssl", "asyncio", "multiprocessing",
+        "doctest", "pdb", "test"
     ]
     for module in excluded_modules:
         cmd.append(f"--exclude-module={module}")
