@@ -105,8 +105,8 @@ def main():
     parser.add_argument(
         "--source",
         type=str,
-        default="src/DitPlex.py",
-        help="Caminho do código-fonte relativo à raiz (Padrão: src/DitPlex.py)"
+        default="src/main.py",
+        help="Caminho do código-fonte relativo à raiz (Padrão: src/main.py)"
     )
     parser.add_argument(
         "--name",
