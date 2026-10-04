@@ -55,6 +55,36 @@ Nenhuma instalação de Python é necessária ao usar os binários pré-compilad
 
 ---
 
+## Uso pela linha de comando
+
+Sem argumentos, o DitPlex abre o menu interativo. Com argumentos, ele converte direto e sai:
+
+| Opção | O que faz |
+|---|---|
+| `-t`, `--text <texto>` | Converte texto em Morse |
+| `-m`, `--morse <morse>` | Converte Morse em texto |
+| `-v`, `--version` | Mostra versão, sistema/arquitetura e licença |
+| `-h`, `--help` | Mostra a ajuda |
+
+### Exemplos
+
+    DitPlex -t "SOS"
+    ... --- ...
+
+    DitPlex -m "... --- ..."
+    SOS
+
+    DitPlex --version
+    [Version]: 1.4.1 [OS/Arch]: linux/x86_64 [License]: MIT
+
+### Regras do Morse
+- Letras separadas por espaço e palavras por `/`.
+- Tudo que vem depois de `-t` ou `-m` é lido como conteúdo, então `DitPlex -m -.-. .-` funciona sem aspas.
+- As opções diferenciam maiúsculas de minúsculas (`-v`, não `-V`).
+- Em caso de erro, a mensagem aparece em vermelho e o programa sai com código 1.
+
+---
+
 ## Futuras Implementações
 
 - [ ] **Sinais Sonoros:** Reprodução de áudio dos impulsos de frequência para cada ponto e traço. *(previsto para v1.6.0)*
