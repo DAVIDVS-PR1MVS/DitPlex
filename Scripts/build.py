@@ -180,6 +180,9 @@ def main():
     for module in excluded_modules:
         cmd.append(f"--exclude-module={module}")
 
+    if sys.platform.startswith("linux"):
+        cmd.append("--strip")
+
     cmd.append(str(source_path))
 
     run_command(cmd)
