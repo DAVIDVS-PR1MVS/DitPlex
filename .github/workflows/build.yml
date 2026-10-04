@@ -40,6 +40,22 @@ jobs:
         shell: bash
         run: python Scripts/build.py --clean --isolated --name "DitPlex-${CLEAN_VERSION}"
 
+      - name: Smoke test executable
+        shell: bash
+        run: |
+          EXE="dist/DitPlex-${CLEAN_VERSION}.exe"
+          "$EXE" -v
+          OUT=$("$EXE" -t "SOS" | tr -d '\r')
+          [ "$OUT" = "... --- ..." ] || { echo "Saida inesperada em -t: $OUT"; exit 1; }
+          OUT=$("$EXE" -m "-.-. .-" | tr -d '\r')
+          [ "$OUT" = "CA" ] || { echo "Saida inesperada em -m: $OUT"; exit 1; }
+
+      - name: Report executable size
+        shell: bash
+        run: |
+          ls -lh dist/
+          pyi-archive_viewer -l "dist/DitPlex-${CLEAN_VERSION}.exe" < /dev/null || true
+
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v4
         with:
@@ -74,6 +90,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip pyinstaller
           python Scripts/build.py --clean --isolated
+
+      - name: Smoke test Linux binary
+        run: |
+          BIN="dist/DitPlex"
+          [ -f "$BIN" ] || BIN="dist/ditplex"
+          "$BIN" -v
+          OUT=$("$BIN" -t "SOS")
+          [ "$OUT" = "... --- ..." ] || { echo "Saida inesperada em -t: $OUT"; exit 1; }
+          OUT=$("$BIN" -m "-.-. .-")
+          [ "$OUT" = "CA" ] || { echo "Saida inesperada em -m: $OUT"; exit 1; }
+          ls -lh dist/
 
       - name: Prepare Packaging Structure
         run: |
