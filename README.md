@@ -22,10 +22,6 @@
 
 
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-
-
-
-
 ![Versão](https://img.shields.io/badge/Versão-1.5.0-blue?style=for-the-badge)
 
 
