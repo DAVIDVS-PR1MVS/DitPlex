@@ -1,10 +1,15 @@
 import unicodedata
 
 morse = [
+    #a-i
     ".-", "-...", "-.-.", "-..", ".", "..-.", "--.", "....", "..",
+    #j-r
     ".---", "-.-", ".-..", "--", "-.", "---", ".--.", "--.-", ".-.",
+    #s-z
     "...", "-", "..-", "...-", ".--", "-..-", "-.--", "--..",
+    #0-9
     "-----", ".----", "..---", "...--", "....-", ".....", "-....", "--...", "---..", "----.",
+    #simbols
     ".-.-.-", "--..--", "..--..", ".----.", "-.-.--", "-.--.", "-.--.-", ".-...", "---...", "-.-.-.", "-...-", ".-.-.", "-....-", "..--.-", ".-..-.", "...-..-", ".--.-."
 ]
 letters = [
@@ -40,3 +45,14 @@ def MinT(text):
         else:
             translate.append(simbol)
     return "".join(translate)
+    
+def IsMorse(text, threshold=0.90):
+    text = "".join(text.split())
+    if not text:
+        return False
+    morse = sum(1 for c in text if c in ".-/")
+    return morse / len(text) >= threshold
+
+def Convert(text):
+    func = MinT if IsMorse(text) else Morse
+    return "\n".join(func(line) for line in text.splitlines())

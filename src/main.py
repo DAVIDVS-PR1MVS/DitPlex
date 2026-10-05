@@ -1,10 +1,12 @@
+import os
 import sys
 import argparse
 import config
+import files
 import translator
 import utils
 
-version = "1.4.1"
+version = "1.5.0"
 
 def Menu():
     utils.Clear()
@@ -105,6 +107,9 @@ def Parser():
     parser = ArgParser(prog="DitPlex", add_help=False, allow_abbrev=False)
     parser.add_argument("-t", "--text", action="store_true")
     parser.add_argument("-m", "--morse", action="store_true")
+    parser.add_argument("-c", "--copy", action="store_true")
+    parser.add_argument("-f", "--file")
+    parser.add_argument("-o", "--output", nargs="?", const="")
     parser.add_argument("-v", "--version", action="store_true")
     parser.add_argument("-h", "--help", action="store_true")
     return parser
@@ -119,10 +124,46 @@ def Help():
     base_color = config.Basecolor
     print(f"{base_color}Uso:{config.RESET} DitPlex [opção] [conteúdo]\n")
     print(f"{base_color}Opções disponíveis:{config.RESET}")
-    print(f"  {base_color}-t, --text{config.RESET} <texto>    Converte texto em código Morse.")
-    print(f"  {base_color}-m, --morse{config.RESET} <morse>   Converte código Morse em texto.")
-    print(f"  {base_color}-v, --version{config.RESET}          Exibe metadados, sistema e versão do aplicativo.")
-    print(f"  {base_color}-h, --help{config.RESET}             Exibe este menu de ajuda.")
+    print(f"  {base_color}-t, --text{config.RESET} <texto>       Converte texto em código Morse.")
+    print(f"  {base_color}-m, --morse{config.RESET} <morse>      Converte código Morse em texto.")
+    print(f"  {base_color}-f, --file{config.RESET} <arquivo>     Converte um arquivo .txt (detecta Morse ou texto).")
+    print(f"  {base_color}-o, --output{config.RESET} [arquivo]   Salva o resultado em arquivo (sem nome: dados_<data>.txt).")
+    print(f"  {base_color}-c, --copy{config.RESET}               Copia o resultado para a área de transferência.")
+    print(f"  {base_color}-v, --version{config.RESET}            Exibe metadados, sistema e versão do aplicativo.")
+    print(f"  {base_color}-h, --help{config.RESET}               Exibe este menu de ajuda.")
+    print(f"\n{base_color}Dica:{config.RESET} coloque -c e -o antes de -t ou -m.")
+
+def Copy_result(result):
+    if utils.Copy(result):
+        print("Copiado para a área de transferência!", file=sys.stderr)
+    else:
+        utils.Error("Erro: Nenhuma área de transferência detectada ou suportada no sistema.")
+        sys.exit(1)
+
+def Save_file(path, result):
+    if path == "":
+        path = files.Default_name()
+    if os.path.exists(path):
+        try:
+            answer = input(f"O arquivo '{path}' já existe. Sobrescrever? (s/n): ").strip().lower()
+        except EOFError:
+            answer = "n"
+        if answer != "s":
+            utils.Error("Operação cancelada: o arquivo não foi alterado.")
+            sys.exit(1)
+    if files.Write(path, result):
+        print(f"Salvo em: {path}", file=sys.stderr)
+    else:
+        utils.Error(f"Erro: Não foi possível gravar o arquivo '{path}'.")
+        sys.exit(1)
+
+def Deliver(result, args):
+    if args.output is None:
+        print(result)
+    else:
+        Save_file(args.output, result)
+    if args.copy:
+        Copy_result(result)
 
 def CLI(argv=None):
     flags, content = Split(sys.argv[1:] if argv is None else argv)
@@ -138,15 +179,31 @@ def CLI(argv=None):
     if extras:
         utils.Error(f"Opção desconhecida: '{extras[0]}'. Use --help ou -h para ver as opções disponíveis.")
         sys.exit(1)
+    if args.file and (args.text or args.morse):
+        utils.Error("Erro: -f não combina com -t ou -m, o sentido da conversão é detectado sozinho.")
+        sys.exit(1)
+    if (args.copy or args.output is not None) and not (args.text or args.morse or args.file):
+        utils.Error("Erro: -c e -o precisam de -t, -m ou -f. Exemplo: DitPlex -c -t \"SOS\"")
+        sys.exit(1)
+    if args.file:
+        text = files.Read(args.file)
+        if text is None:
+            utils.Error(f"Erro: Não foi possível ler o arquivo '{args.file}'.")
+            sys.exit(1)
+        if not text.strip():
+            utils.Error(f"Erro: O arquivo '{args.file}' está vazio.")
+            sys.exit(1)
+        Deliver(translator.Convert(text), args)
+        sys.exit(0)
     if args.text:
         if content:
-            print(translator.Morse(content))
+            Deliver(translator.Morse(content), args)
             sys.exit(0)
         utils.Error("Erro: Faltou informar o texto. Exemplo: DitPlex -t \"SOS\"")
         sys.exit(1)
     if args.morse:
         if content:
-            print(translator.MinT(content))
+            Deliver(translator.MinT(content), args)
             sys.exit(0)
         utils.Error("Erro: Faltou informar o código Morse. Exemplo: DitPlex -m \"... --- ...\"")
         sys.exit(1)
